@@ -55,12 +55,12 @@ def get_db_latest_create_time(table_name="bills") -> (None, datetime):
     :param table_name: 表名
     """
     query = f"""
-        SELECT MAX(create_time) AS create_time 
+        SELECT MAX(create_time) AS last_time 
         FROM {table_name}
     """
     result = query_db(query, one=True)
     if result is not None:
-        return datetime.strptime(result['create_time'], '%Y-%m-%d %H:%M:%S')
+        return datetime.strptime(result['last_time'], '%Y-%m-%d %H:%M:%S')
     return result
 
 

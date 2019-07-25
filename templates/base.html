@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+        <meta charset="UTF-8">
+        <title>
+            {% block title %}
+                base
+            {% endblock %}
+        </title>
+        <!-- 引入Vue -->
+        <script src="{{ url_for('static', filename='extra_js/vue.js') }}"></script>
+
+        <!-- 引入Element样式 -->
+        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">
+        <script src="{{ url_for('static', filename='css/ele_index.css') }}"></script>
+        <!-- 引入Element组件库 -->
+{#        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>#}
+        <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script>
+
+        <!-- 引入 Echarts -->
+        <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/v-charts/lib/index.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/v-charts/lib/style.min.css">
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+
+    {% endblock %}
+</head>
+<body>
+<div id="app-menu">
+
+    {#        <ve-line :data="chartData"></ve-line>#}
+    <el-container>
+        <el-header>
+            <div class="line"></div>
+            <el-menu
+                    :default-active="activeIndex2"
+                    class="el-menu-demo"
+                    mode="horizontal"
+                    @select="handleSelect"
+{#                    background-color="#545c64"#}
+{#                    text-color="#fff"#}
+                    active-text-color="#ffd04b">
+                <el-menu-item index="1">处理中心</el-menu-item>
+                <el-submenu index="2">
+                    <template slot="title">我的工作台</template>
+                    <el-menu-item index="2-1">选项1</el-menu-item>
+                    <el-menu-item index="2-2">选项2</el-menu-item>
+                    <el-menu-item index="2-3">选项3</el-menu-item>
+                    <el-submenu index="2-4">
+                        <template slot="title">选项4</template>
+                        <el-menu-item index="2-4-1">选项1</el-menu-item>
+                        <el-menu-item index="2-4-2">选项2</el-menu-item>
+                        <el-menu-item index="2-4-3">选项3</el-menu-item>
+                    </el-submenu>
+                </el-submenu>
+                <el-menu-item index="3" disabled>消息中心</el-menu-item>
+                <el-menu-item index="4"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
+            </el-menu>
+        </el-header>
+
+
+{#        <el-main :style="height">#}
+{#            {% block content %}#}
+{#            {% endblock %}#}
+{#        </el-main>#}
+{##}
+    </el-container>
+</div>
+
+<div class="mt-50">
+        {% block content %}
+        {% endblock %}
+
+        {% block footer %}
+            <el-footer class="el-footer">Account by @yekingyan 2019</el-footer>
+        {% endblock %}
+</div>
+
+<script>
+    var vmMenu = new Vue({
+        el: '#app-menu',
+        delimiters: ['[[', ']]'],
+        data: function () {
+            let baseData = {
+                height: {height: window.innerHeight - 100 + 'px'},
+                activeIndex: '1',
+                activeIndex2: '4',
+{#            {% block vue_data %}#}
+{#            {% endblock %}#}
+
+            };
+            let data = {}
+{#            {% block vue_data %}#}
+{#            {% endblock %}#}
+            baseData = Object.assign({}, data, baseData)
+            return baseData
+        },
+        methods: {
+            handleSelect(key, keyPath) {
+                console.log(key, keyPath);
+            },
+        },
+    })
+</script>
+
+
+{% block after_script %}
+{% endblock %}
+
+</body>
+</html>

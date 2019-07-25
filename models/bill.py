@@ -4,7 +4,7 @@ from data.connet_db import get_db
 class BILL:
 
     create_bill_text = """
-        CREATE TABLE `bills`(
+        CREATE TABLE IF NOT EXISTS `bills`(
             `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             `create_time` DATETIME NOT NULL, -- 添加时间
             `pay_date` DATE NOT NULL, -- 付款时间

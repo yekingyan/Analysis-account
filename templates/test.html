@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    test
+{% endblock %}
+
+
+{% block content %}
+    <div id="app-1">
+        <div :style="height">
+            <ve-line :data="chartData"></ve-line>
+        </div>
+    </div>
+{% endblock %}
+
+{% block after_script %}
+    <script>
+        let app1 = new Vue({
+            el: '#app-1',
+            data: function () {
+                return {
+                    height: {height: window.innerHeight - 150 + 'px'},
+                    chartData: {
+                        columns: ['日期', '销售额'],
+                        rows: [
+                            {'日期': '1月1日', '销售额': 123},
+                            {'日期': '1月2日', '销售额': 1223},
+                            {'日期': '1月3日', '销售额': 2123},
+                            {'日期': '1月4日', '销售额': 4123},
+                            {'日期': '1月5日', '销售额': 3123},
+                            {'日期': '1月6日', '销售额': 7123}
+                        ]
+                    }
+                }
+            }
+        })
+    </script>
+{% endblock %}
