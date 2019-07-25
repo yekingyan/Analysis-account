@@ -6,8 +6,8 @@
 
 
 {% block content %}
-    <div id="app-1">
-        <div :style="height">
+    <div id="app-expend" :style="height">
+        <div >
             <ve-line :data="chartData"></ve-line>
         </div>
     </div>
@@ -16,7 +16,7 @@
 {% block after_script %}
     <script>
         let app1 = new Vue({
-            el: '#app-1',
+            el: '#app-expend',
             data: function () {
                 return {
                     height: {height: window.innerHeight - 150 + 'px'},

@@ -15,8 +15,8 @@
         <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">
         <script src="{{ url_for('static', filename='css/ele_index.css') }}"></script>
         <!-- 引入Element组件库 -->
-{#        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>#}
-        <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script>
+        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>
+        <!-- <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script> -->
 
         <!-- 引入 Echarts -->
         <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
@@ -28,9 +28,8 @@
     {% endblock %}
 </head>
 <body>
-<div id="app-menu">
 
-    {#        <ve-line :data="chartData"></ve-line>#}
+<div id="app-menu">
     <el-container>
         <el-header>
             <div class="line"></div>
@@ -59,13 +58,6 @@
                 <el-menu-item index="4"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
             </el-menu>
         </el-header>
-
-
-{#        <el-main :style="height">#}
-{#            {% block content %}#}
-{#            {% endblock %}#}
-{#        </el-main>#}
-{##}
     </el-container>
 </div>
 
@@ -83,19 +75,12 @@
         el: '#app-menu',
         delimiters: ['[[', ']]'],
         data: function () {
-            let baseData = {
+            return {
                 height: {height: window.innerHeight - 100 + 'px'},
                 activeIndex: '1',
                 activeIndex2: '4',
-{#            {% block vue_data %}#}
-{#            {% endblock %}#}
 
             };
-            let data = {}
-{#            {% block vue_data %}#}
-{#            {% endblock %}#}
-            baseData = Object.assign({}, data, baseData)
-            return baseData
         },
         methods: {
             handleSelect(key, keyPath) {

@@ -56,12 +56,12 @@ def get_db_without_context(db_path=None):
 #     return (rv[0] if rv else None) if one else rv
 
 
-def query_db(query, args=(), one=False):
+def query_db(query, args=(), one=False, db_path=None):
     """
     for user in query_db('select * from users'):
     print user['username'], 'has the id', user['user_id']
     """
-    with db_manager() as db:
+    with db_manager(db_path) as db:
         cur = db.execute(query, args)
         rv = cur.fetchall()
     return (rv[0] if rv else None) if one else rv

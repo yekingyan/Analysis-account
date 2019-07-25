@@ -1,0 +1,15 @@
+.el-table .warning-row {
+    background: oldlace;
+}
+
+.el-table .success-row {
+    background: #f0f9eb;
+}
+
+.el-table td, .el-table th {
+    padding: 0px;
+}
+
+.el-table .cell, .el-table th div {
+    padding-right: 0px;
+}
