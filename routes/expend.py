@@ -1,6 +1,8 @@
+import copy
 from datetime import (
     datetime,
     date,
+    timedelta,
 )
 
 import pandas as pd
@@ -10,6 +12,7 @@ from flask import (
     render_template,
     jsonify,
     request,
+    abort,
 )
 from data.connet_db import (
     query_db,
@@ -17,6 +20,7 @@ from data.connet_db import (
 
 from libs.response import template_or_json
 from models.bill import BILL
+from forms.expend import DaysForm
 
 expend = Blueprint('expend', __name__)
 pd.set_option('display.max_columns', None)  # 显示所有列
@@ -46,11 +50,21 @@ def hello_world1():
 
 @expend.route('/days/')
 def days():
+    print(request.args)
+    form = DaysForm(request.args)
+    print(form.data)
+    if form.validate():
+        start_date = form.data['start_date']
+        end_date = form.data['end_date']
+    else:
+        start_date = date.today() - timedelta(days=30)
+        end_date = date.today() + timedelta(days=1)
+
     bill = BILL()
-    start = date(year=2019, month=4, day=1)
-    end = date(year=2019, month=8, day=1)
-    data = bill.get_range_day_data(start, end)
+    data = bill.get_range_day_data(start_date, end_date)
     df = pd.DataFrame(data)
+    if df.empty:
+        abort(404)
 
     # 各个类型 amount list
     transaction_types = df['transaction_type'].drop_duplicates().tolist()
@@ -75,8 +89,25 @@ def days():
     # 转dict
     data = df_data.to_dict(orient="records")
 
+    # 各类型金额合计
+    type_of_data = df_data.sum().to_dict()
+    type_of_data.pop('pay_date')
+
+    # 饼图
+    pie_list = [{'类型': k, 'amount': v} for k, v in type_of_data.items() if k != 'amount']
+
+    # 大类型合计
+    type_of_data['total_eat'] = 0
+    for k, v in copy.copy(type_of_data).items():
+        if '餐饮' in k:
+            type_of_data['total_eat'] += v
+            type_of_data.pop(k)
+
+    # print(type_of_data)
     return template_or_json(request, 'days.html', data={
         'rows': data,
         'columns': need_columns,
-        'count': len(df_data)
+        'count': len(df_data),
+        'pie': pie_list,
+        'type_of_data': type_of_data,
     })

@@ -6,12 +6,40 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/ele-table.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ele_table.css') }}">
 {% endblock %}
 
 {% block content %}
     <div id="app-expend" :style="height">
         <div>
+            <el-row>
+                <el-col :span="12">
+                    <el-date-picker
+                            v-model="dateRange"
+                            type="daterange"
+                            unlink-panels
+                            :picker-options="pickerOptions"
+                            @change="changeDate"
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期"
+                            style="width: auto"
+                            align="right">
+                    </el-date-picker>
+
+                    <div>
+                        <el-card style="max-width: 430px;" shadow="hover">
+                            <div v-for="(v, k) in cardContend" :key="k">
+                                <div>[[ k ]]： <span>[[ v ]]</span></div>
+                            </div>
+                        </el-card>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <ve-pie :data="pieData"></ve-pie>
+                </el-col>
+            </el-row>
+
             <ve-line :data="chartData" :settings="chartSettings"></ve-line>
 
             <el-table
@@ -31,7 +59,7 @@
                     layout="sizes, prev, pager, next, jumper"
                     :total="table.count"
                     :page-sizes="[10, 50, 200, 600, 10000]"
-{#                    :page-size="10"#}
+                    {#                    :page-size="10"#}
                     @size-change="handleSizeChange"
                     @current-change="current_change">
             </el-pagination>
@@ -45,27 +73,70 @@
     <script>
         let res = {{ data|safe }};
         const pageSize = 10
+
+        const getRangeDate = (day) => {
+            // 返回当前日+1天 及 day之前的日期
+            const end = new Date();
+            const start = new Date();
+            {#start.setTime(start.getTime() - cutDateTime);#}
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * day)
+            end.setTime(end.getTime() + 3600 * 1000 * 24)
+            return [start, end]
+        }
+
+
         let app1 = new Vue({
             el: '#app-expend',
             delimiters: ['[[', ']]'],
             data: function () {
                 return {
                     height: {height: window.innerHeight - 150 + 'px'},
-                    chartData: {
+                    chartData: { // 折线图数据
                         columns: ['pay_date', 'amount', '餐饮', '水果'],
                         rows: res.rows
                     },
-                    chartSettings: {
+                    chartSettings: { // 折线图设置
                         max: [200, 2500]
                     },
-                    table: {
+                    pieData: { // 饼图
+                        columns: ['类型', 'amount'],
+                        rows: res.pie
+                    },
+                    table: { // table数据
                         tableColumns: res.columns,
                         tableData: res.rows.slice(0, 10),
                         count: res.count
                     },
                     pageSize: pageSize,
                     currentPage: 1,
-
+                    pickerOptions: {
+                        shortcuts: [
+                            {
+                                text: '最近一周',
+                                onClick(picker) {
+                                    const [start, end] = getRangeDate(7)
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            },
+                            {
+                                text: '最近一个月',
+                                onClick(picker) {
+                                    const [start, end] = getRangeDate(30)
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            },
+                            {
+                                text: '最近三个月',
+                                onClick(picker) {
+                                    const [start, end] = getRangeDate(90)
+                                    log('click', start, end)
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            }
+                        ]
+                    },
+                    dateRange: [], // 搜索时间
+                    cardContend: res.type_of_data,
                 }
             },
             methods: {
@@ -91,6 +162,18 @@
                     this.pageSize = size
                     this.current_change(this.currentPage)
                 },
+
+                changeDate(dateRange) {
+                    // 改变日期触发重定向
+                    const start = dateRange[0]
+                    const end = dateRange[1]
+                    {#end.setTime(end.getTime() + 3600 * 1000 * 24)#}
+                    let start_str = start.toLocaleDateString()
+                    let end_str = end.toLocaleDateString()
+                    log('redirect', start_str, end_str)
+                    window.location.search = `?start_date=${start_str}&end_date=${end_str}`
+                    window.location.href = window.location.host + window.location.pathname + window.location.search
+                }
             }
         })
     </script>
