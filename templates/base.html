@@ -34,18 +34,18 @@
         <el-header>
             <div class="line"></div>
             <el-menu
-                    :default-active="activeIndex2"
+                    :default-active="activeIndex"
                     class="el-menu-demo"
                     mode="horizontal"
                     @select="handleSelect"
-{#                    background-color="#545c64"#}
-{#                    text-color="#fff"#}
+                    {#                    background-color="#545c64"#}
+                    {#                    text-color="#fff"#}
                     active-text-color="#ffd04b">
                 <el-menu-item index="1">处理中心</el-menu-item>
                 <el-submenu index="2">
                     <template slot="title">我的工作台</template>
-                    <el-menu-item index="2-1">选项1</el-menu-item>
-                    <el-menu-item index="2-2">选项2</el-menu-item>
+                    <el-menu-item index="expend_days">days</el-menu-item>
+                    <el-menu-item index="expend_months">months</el-menu-item>
                     <el-menu-item index="2-3">选项3</el-menu-item>
                     <el-submenu index="2-4">
                         <template slot="title">选项4</template>
@@ -62,31 +62,51 @@
 </div>
 
 <div class="mt-50">
-        {% block content %}
-        {% endblock %}
+    {% block content %}
+    {% endblock %}
 
-        {% block footer %}
-            <el-footer class="el-footer">Account by @yekingyan 2019</el-footer>
-        {% endblock %}
+    {% block footer %}
+        <el-footer class="el-footer">Account by @yekingyan 2019</el-footer>
+    {% endblock %}
 </div>
 
 <script>
-    var vmMenu = new Vue({
+
+    // 前端url的endpoint与反向路由建立联系
+    const URL_ROUTE = new Map([
+        ['expend_days', '{{  url_for('expend.days')|safe }}'],
+        ['expend_months', '{{  url_for('expend.months')|safe }}'],
+    ])
+
+
+    let vmMenu = new Vue({
         el: '#app-menu',
         delimiters: ['[[', ']]'],
         data: function () {
             return {
-                height: {height: window.innerHeight - 100 + 'px'},
-                activeIndex: '1',
-                activeIndex2: '4',
+                activeIndex: '1', // 当前激活菜单的 index
 
             };
         },
         methods: {
             handleSelect(key, keyPath) {
-                console.log(key, keyPath);
+                // 菜单点击，跳转
+                log('key', key)
+                log('keyPath', keyPath)
+                if (URL_ROUTE.has(key)) {
+                    window.location.pathname = URL_ROUTE.get(key)
+                }
             },
         },
+        created() {
+            // active当前页面的菜单
+            for(let [k, v] of URL_ROUTE) {
+                if (window.location.pathname === v) {
+                    this.activeIndex = k
+                }
+            }
+
+        }
     })
 </script>
 
