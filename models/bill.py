@@ -18,8 +18,14 @@ class BILL:
     columns = ['id', 'create_time', 'pay_date', 'transaction_type', 'transaction_item', 'amount', 'payment', 'pay_type',
                'need']
 
+    def __init__(self, start_pay_date: date, end_pay_date: date):
+        self.start_pay_date = start_pay_date
+        self.end_pay_date = end_pay_date
+        self.data = self.get_range_day_data(start_pay_date, end_pay_date)
+
     @staticmethod
     def create_bill():
+        """创建表"""
         get_db().execute(BILL.create_bill_text)
 
     @staticmethod
@@ -34,12 +40,13 @@ class BILL:
         """
         return query_db(query, (start_pay_date, end_pay_date))
 
-    def day_interval(self, start: date, end: date) -> (dict, None):
+    @classmethod
+    def day_interval(cls, start: date, end: date) -> (dict, None):
         """
         以天为颗粒度
         总数，各类型数
         """
-        data = self.get_range_day_data(start, end)
+        data = cls.get_range_day_data(start, end)
 
     def month_interval(self, start: date, end: date) -> (dict, None):
         """

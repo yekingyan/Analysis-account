@@ -30,7 +30,7 @@
                     <div>
                         <el-card style="max-width: 430px;" shadow="hover">
                             <div v-for="(v, k) in cardContend" :key="k">
-                                <div>[[ k ]]： <span>[[ v ]]</span></div>
+                                <div>[[ k ]]： <span>[[ v.toFixed(3) ]]</span></div>
                             </div>
                         </el-card>
                     </div>
@@ -90,7 +90,7 @@
             delimiters: ['[[', ']]'],
             data: function () {
                 return {
-                    height: {height: window.innerHeight - 150 + 'px'},
+                    height: {'min-height': window.innerHeight - 150 + 'px'},
                     chartData: { // 折线图数据
                         columns: ['pay_date', 'amount', '餐饮', '水果'],
                         rows: res.rows

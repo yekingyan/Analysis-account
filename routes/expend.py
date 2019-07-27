@@ -50,21 +50,14 @@ def hello_world1():
 
 @expend.route('/days/')
 def days():
-    print(request.args)
     form = DaysForm(request.args)
-    print(form.data)
-    if form.validate():
-        start_date = form.data['start_date']
-        end_date = form.data['end_date']
-    else:
-        start_date = date.today() - timedelta(days=30)
-        end_date = date.today() + timedelta(days=1)
+    start_date = form.data['start_date']
+    end_date = form.data['end_date']
 
-    bill = BILL()
-    data = bill.get_range_day_data(start_date, end_date)
+    data = BILL.get_range_day_data(start_date, end_date)
     df = pd.DataFrame(data)
     if df.empty:
-        abort(404)
+        abort(404, '该周期内无相应数据 \n like /expend/days/?start_date=2019/7/10&end_date=2019/7/20')
 
     # 各个类型 amount list
     transaction_types = df['transaction_type'].drop_duplicates().tolist()
@@ -83,6 +76,8 @@ def days():
                        )
     # 去nan
     df_data = df_data.replace({np.nan: None})
+    df_data['pay_date'] = df_data['pay_date'].str.slice(0, -9)
+    # df_data['amount'] = np.around(df_data['amount'].astype(np.double), 3)
     # 保留列
     need_columns = ['pay_date', 'amount', *transaction_types]
     [df_data.drop(col, axis=1, inplace=True) for col in list(df_data) if col not in need_columns]
@@ -103,7 +98,6 @@ def days():
             type_of_data['total_eat'] += v
             type_of_data.pop(k)
 
-    # print(type_of_data)
     return template_or_json(request, 'days.html', data={
         'rows': data,
         'columns': need_columns,
