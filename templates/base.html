@@ -12,13 +12,13 @@
         <script src="{{ url_for('static', filename='extra_js/vue.js') }}"></script>
 
         <!-- 引入Element样式 -->
-        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">
-        <script src="{{ url_for('static', filename='css/ele_index.css') }}"></script>
+{#        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">#}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/ele_index.css') }}">
         <!-- 引入Element组件库 -->
-        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>
-        <!-- <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script> -->
+{#        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>#}
+        <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script>
 
-        <!-- 引入 Echarts -->
+        <!-- 引入 v-charts -->
         <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/v-charts/lib/index.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/v-charts/lib/style.min.css">

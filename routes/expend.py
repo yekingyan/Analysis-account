@@ -15,12 +15,6 @@ pd.set_option('display.max_columns', None)  # 显示所有列
 pd.set_option('display.width', 4000)  # 页面宽度
 
 
-@expend.route('/')
-def hello_world():
-    print(1212)
-    return render_template('test.html')
-
-
 @expend.route('/days/')
 def days():
     form = DaysForm(request.args)
