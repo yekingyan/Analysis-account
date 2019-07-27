@@ -75,10 +75,10 @@
                 </el-table-column>
             </el-table>
             <el-pagination
-                    layout="sizes, prev, pager, next, jumper"
+                    layout="total, sizes, prev, pager, next, jumper"
                     :total="table.count"
                     :page-sizes="[10, 50, 200, 600, 10000]"
-                    {#                    :page-size="10"#}
+                    :page-size="pageSize"
                     @size-change="handleSizeChange"
                     @current-change="current_change">
             </el-pagination>
@@ -126,7 +126,7 @@
                     },
                     table: { // table数据
                         tableColumns: res.columns,
-                        tableData: res.rows.slice(0, 10),
+                        tableData: res.rows.slice(0, pageSize),
                         count: res.count
                     },
                     pageSize: pageSize,

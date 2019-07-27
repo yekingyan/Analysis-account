@@ -4,6 +4,7 @@ from copy import copy
 import pandas as pd
 
 from data.connet_db import get_db, query_db
+from libs.db_tools import validate_ordering
 
 
 class BILL:
@@ -29,11 +30,11 @@ class BILL:
     types_columns = None
     month_field = 'pay_month'  # 指代月份的列名
 
-    def __init__(self, start_pay_date: date, end_pay_date: date):
+    def __init__(self, start_pay_date: date, end_pay_date: date, ordering='id'):
         self.start_pay_date = start_pay_date
         self.end_pay_date = end_pay_date
         # origin data
-        self.data = self.get_range_day_data(start_pay_date, end_pay_date)
+        self.data = self.get_range_day_data(start_pay_date, end_pay_date, ordering)
         self.df_data = pd.DataFrame(self.data)
         # columns
         self.types_columns = self._get_types_columns()
@@ -57,17 +58,21 @@ class BILL:
             return []
         return self.df_data['transaction_type'].drop_duplicates().tolist()
 
-    @staticmethod
-    def get_range_day_data(start_pay_date: date, end_pay_date: date) -> (dict, None):
+    @classmethod
+    def get_range_day_data(cls, start_pay_date: date, end_pay_date: date, ordering) -> (dict, None):
         """
         取一段时间(pay_date)的数据
         """
-        query = """
+        if not validate_ordering(ordering, cls.columns):
+            raise Exception('排序字段不在表列名中')
+        query = f"""
             SELECT *
             FROM bills
-            WHERE pay_date BETWEEN ? AND ?;
+            WHERE pay_date BETWEEN ? AND ?
+            ORDER BY {ordering};
         """
-        return query_db(query, (start_pay_date, end_pay_date))
+        data = query_db(query, (start_pay_date, end_pay_date))
+        return data
 
     def get_amount_of_granularity(self, granularity: str, need_columns: list) -> pd.DataFrame:
         """

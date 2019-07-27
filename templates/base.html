@@ -46,7 +46,7 @@
                     <template slot="title">我的工作台</template>
                     <el-menu-item index="expend_days">days</el-menu-item>
                     <el-menu-item index="expend_months">months</el-menu-item>
-                    <el-menu-item index="2-3">选项3</el-menu-item>
+                    <el-menu-item index="expend_journal">journal</el-menu-item>
                     <el-submenu index="2-4">
                         <template slot="title">选项4</template>
                         <el-menu-item index="2-4-1">选项1</el-menu-item>
@@ -76,6 +76,7 @@
     const URL_ROUTE = new Map([
         ['expend_days', '{{  url_for('expend.days')|safe }}'],
         ['expend_months', '{{  url_for('expend.months')|safe }}'],
+        ['expend_journal', '{{  url_for('expend.journal')|safe }}'],
     ])
 
 

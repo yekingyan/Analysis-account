@@ -15,6 +15,21 @@ pd.set_option('display.max_columns', None)  # 显示所有列
 pd.set_option('display.width', 4000)  # 页面宽度
 
 
+@expend.route('/journal/')
+def journal():
+    form = DaysForm(request.args)
+    start_date = form.data['start_date']
+    end_date = form.data['end_date']
+
+    bill = BILL(start_date, end_date, '-id')
+    data = bill.data
+    return template_or_json(request, 'journal.html', data={
+        'rows': data,
+        'columns': bill.columns,
+        'count': len(data),
+    })
+
+
 @expend.route('/days/')
 def days():
     form = DaysForm(request.args)
