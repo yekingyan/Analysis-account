@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-    days
+    {% if request.path == url_for('expend.days')%}
+        日颗粒度统计
+    {% else %}
+        月颗粒度统计
+    {% endif %}
 {% endblock %}
 
 {% block head %}
@@ -15,16 +19,31 @@
             <el-row>
                 <el-col :span="12">
                     <el-date-picker
+                            v-if="isDays"
                             v-model="dateRange"
                             type="daterange"
                             unlink-panels
-                            :picker-options="pickerOptions"
+                            :picker-options="dayOptions"
                             @change="changeDate"
                             range-separator="至"
                             start-placeholder="开始日期"
                             end-placeholder="结束日期"
                             style="width: auto"
                             align="right">
+                    </el-date-picker>
+
+                    <el-date-picker
+                            v-if="!isDays"
+                            v-model="monthRange"
+                            type="monthrange"
+                            align="right"
+                            style="width: auto"
+                            unlink-panels
+                            range-separator="至"
+                            start-placeholder="开始月份"
+                            end-placeholder="结束月份"
+                            @change="changeMonth"
+                            :picker-options="monthOptions">
                     </el-date-picker>
 
                     <div>
@@ -72,6 +91,8 @@
 
     <script>
         let res = {{ data|safe }};
+        let daysPath = '{{ url_for('expend.days')|safe }}';
+        let monthsPath = '{{ url_for('expend.months')|safe }}';
         const pageSize = 10
 
         const getRangeDate = (day) => {
@@ -91,8 +112,9 @@
             data: function () {
                 return {
                     height: {'min-height': window.innerHeight - 150 + 'px'},
+                    isDays: true, // 是否为日颗粒度
                     chartData: { // 折线图数据
-                        columns: ['pay_date', 'amount', '餐饮', '水果'],
+                        columns: ['amount', '餐饮', '水果'],
                         rows: res.rows
                     },
                     chartSettings: { // 折线图设置
@@ -109,7 +131,7 @@
                     },
                     pageSize: pageSize,
                     currentPage: 1,
-                    pickerOptions: {
+                    dayOptions: {
                         shortcuts: [
                             {
                                 text: '最近一周',
@@ -129,13 +151,47 @@
                                 text: '最近三个月',
                                 onClick(picker) {
                                     const [start, end] = getRangeDate(90)
-                                    log('click', start, end)
                                     picker.$emit('pick', [start, end]);
                                 }
                             }
                         ]
                     },
-                    dateRange: [], // 搜索时间
+                    monthOptions: {
+                        shortcuts: [
+                            {
+                                text: '最近三个月',
+                                onClick(picker) {
+                                    const end = new Date();
+                                    const start = new Date();
+                                    start.setMonth(start.getMonth() - 3);
+                                    end.setMonth(end.getMonth() + 1);
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            },
+                            {
+                                text: '最近六个月',
+                                onClick(picker) {
+                                    const end = new Date();
+                                    const start = new Date();
+                                    start.setMonth(start.getMonth() - 6);
+                                    end.setMonth(end.getMonth() + 1);
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            },
+                            {
+                                text: '今年至今',
+                                onClick(picker) {
+                                    const end = new Date();
+                                    const start = new Date(new Date().getFullYear(), 0);
+                                    end.setMonth(end.getMonth() + 1);
+                                    picker.$emit('pick', [start, end]);
+                                }
+                            },
+
+                        ]
+                    },
+                    dateRange: [], // 搜索时间, 天
+                    monthRange: [], // 搜索时间, 月
                     cardContend: res.type_of_data,
                 }
             },
@@ -167,12 +223,29 @@
                     // 改变日期触发重定向
                     const start = dateRange[0]
                     const end = dateRange[1]
-                    {#end.setTime(end.getTime() + 3600 * 1000 * 24)#}
                     let start_str = start.toLocaleDateString()
                     let end_str = end.toLocaleDateString()
-                    log('redirect', start_str, end_str)
                     window.location.search = `?start_date=${start_str}&end_date=${end_str}`
-                    window.location.href = window.location.host + window.location.pathname + window.location.search
+                },
+                changeMonth(monthRange) {
+                    log(monthRange)
+                    const start = monthRange[0]
+                    const end = monthRange[1]
+                    let start_str = start.toLocaleDateString().split('/').slice(0, 2).join('/')
+                    let end_str = end.toLocaleDateString().split('/').slice(0, 2).join('/')
+                    window.location.search = `?start_month=${start_str}&end_month=${end_str}`
+                }
+            },
+            created() {
+                if (window.location.pathname === daysPath) {
+                    // 日颗粒度
+                    this.isDays = true
+                    this.chartData.columns.unshift('pay_date')
+                } else if (window.location.pathname === monthsPath) {
+                    // 月颗粒度
+                    this.isDays = false
+                    this.chartData.columns.unshift('pay_month', '房租')
+                    this.chartSettings = Object.assign({}, this.chartSettings, {max: [5600]})
                 }
             }
         })
