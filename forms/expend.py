@@ -1,4 +1,6 @@
 from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
+
 from wtforms import Form, DateField
 from wtforms.validators import DataRequired
 
@@ -12,6 +14,6 @@ class DaysForm(Form):
 class MonthsForm(Form):
     """默认 start3个月之前  end 下月月初"""
     start_month = DateField(validators=[DataRequired()], format='%Y/%m',
-                            default=date.today().replace(month=date.today().month-3, day=1))
+                            default=date.today().replace(day=1)-relativedelta(months=3))
     end_month = DateField(validators=[DataRequired()], format='%Y/%m',
-                          default=date.today().replace(month=date.today().month+1, day=1))
+                          default=date.today().replace(day=1)+relativedelta(months=1))
