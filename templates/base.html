@@ -55,7 +55,7 @@
                     </el-submenu>
                 </el-submenu>
                 <el-menu-item index="3" disabled>消息中心</el-menu-item>
-                <el-menu-item index="4"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
+                <el-menu-item index="admin_settings">设置</el-menu-item>
             </el-menu>
         </el-header>
     </el-container>
@@ -77,6 +77,7 @@
         ['expend_days', '{{  url_for('expend.days')|safe }}'],
         ['expend_months', '{{  url_for('expend.months')|safe }}'],
         ['expend_journal', '{{  url_for('expend.journal')|safe }}'],
+        ['admin_settings', '{{  url_for('admin.settings')|safe }}'],
     ])
 
 

@@ -1,5 +1,6 @@
 from flask import Flask
 from routes.expend import expend
+from routes.admin import admin
 
 
 def register_blueprint(app):
@@ -7,6 +8,7 @@ def register_blueprint(app):
     注册蓝图
     """
     app.register_blueprint(expend, url_prefix='/expend')
+    app.register_blueprint(admin, url_prefix='/admin')
 
 
 def create_app():

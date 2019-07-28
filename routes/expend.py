@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from flask import (
     Blueprint,
-    render_template,
     request,
     abort,
 )

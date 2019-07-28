@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+    settings
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style lang="scss">
+        .upload-header {
+            font: 18px large;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .record-item {
+            margin: 5px;
+        }
+
+        .record-item-title {
+            font-weight: 600;
+        }
+
+        .record-item-detail {
+            color: darkgray;
+        }
+
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div id="app-settings" :style="height">
+        <div>
+            <el-row>
+                <el-col :span="12">
+                    <div class="upload-header">增量数据同步</div>
+                    <div class="upload-record">
+                        <div class="record-item">
+                            <span class="record-item-title">最后同步时间：</span>
+                            <span class="record-item-detail">[[recordData.last_auto_add_time]]</span>
+                        </div>
+                        <div class="record-item">
+                            <span class="record-item-title">最后纪录时间：</span>
+                            <span class="record-item-detail">[[recordData.last_create_time]]</span>
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :span="12">
+                    <el-upload
+                            class="upload-demo"
+                            drag
+                            action="uploadUrl"
+                            accept=".csv"
+                            show-file-list>
+                        <i class="el-icon-upload"></i>
+                        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                        <div class="el-upload__tip" slot="tip">
+                            <span></span>
+                        </div>
+                    </el-upload>
+                </el-col>
+            </el-row>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block after_script %}
+    <script>
+        let UPLOAD_URL = '{{ url_for('admin.upload')|safe }}';
+        let RES = {{ data|safe }};
+
+        let app1 = new Vue({
+            el: '#app-settings',
+            delimiters: ['[[', ']]'],
+            data: function () {
+                return {
+                    height: {'min-height': window.innerHeight - 150 + 'px'},
+                    uploadUrl: UPLOAD_URL,
+                    recordData: RES,
+
+                }
+            },
+            methods: {
+                submitUpload() {
+                    this.$refs.upload.submit();
+                },
+                handleRemove(file, fileList) {
+                    console.log(file, fileList);
+                },
+                handlePreview(file) {
+                    console.log(file);
+                }
+            }
+        })
+    </script>
+{% endblock %}

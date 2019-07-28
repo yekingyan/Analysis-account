@@ -17,6 +17,7 @@
     <script>
         let app1 = new Vue({
             el: '#app-expend',
+            delimiters: ['[[', ']]'],
             data: function () {
                 return {
                     height: {'min-height': window.innerHeight - 150 + 'px'},

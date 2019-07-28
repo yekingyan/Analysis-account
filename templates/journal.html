@@ -4,6 +4,10 @@
     journal
 {% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ele_table.css') }}">
+{% endblock %}
 
 {% block content %}
     <div id="app-expend" :style="height">
@@ -21,8 +25,7 @@
         <el-table
                 :data="table.tableData"
                 style="width: 100%"
-                :default-sort="{prop: 'date', order: 'descending'}"
-                :row-class-name="tableRowClassName">
+                :default-sort="{prop: 'date', order: 'descending'}">
             <el-table-column
                     v-for="(v, k) in table.tableColumns"
                     :key="k"
@@ -49,6 +52,7 @@
 
         let app1 = new Vue({
             el: '#app-expend',
+            delimiters: ['[[', ']]'],
             data: function () {
                 return {
                     height: {'min-height': window.innerHeight - 150 + 'px'},
@@ -63,15 +67,6 @@
                 }
             },
             methods: {
-                tableRowClassName({row, rowIndex}) {
-                    // table 交替色
-                    if (rowIndex % 2 === 0) {
-                        return 'warning-row';
-                    } else {
-                        return 'success-row';
-                    }
-                },
-
                 current_change(page) {
                     // 换页
                     this.currentPage = page

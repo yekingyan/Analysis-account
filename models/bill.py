@@ -18,10 +18,11 @@ class BILL:
             `amount` DECIMAL(7, 3) NOT NULL, -- 金额
             `payment` TEXT NOT NULL, -- 支付方式
             `pay_type` TEXT NOT NULL, -- 支付类型
-            `need` INTEGER NOT NULL -- 需要程度
+            `need` INTEGER NOT NULL, -- 需要程度
+            `auto_add_time` DATETIME DEFAULT CURRENT_TIMESTAMP  -- 数据导入时间
 )"""
     columns = ['id', 'create_time', 'pay_date', 'transaction_type', 'transaction_item', 'amount', 'payment', 'pay_type',
-               'need']
+               'need', 'auto_add_time']
     accuracy = 3  # 计算精度
     start_pay_date = None
     end_pay_date = None

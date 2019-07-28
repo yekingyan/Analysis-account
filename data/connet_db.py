@@ -32,6 +32,7 @@ def db_manager(db_path=None):
     db = get_db(db_path)
     yield db
     db.close()
+    delattr(g, '_database')
 
 
 def get_db_without_context(db_path=None):

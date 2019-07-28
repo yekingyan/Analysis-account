@@ -1,10 +1,10 @@
-from datetime import timedelta, datetime
+from datetime import timedelta
 import pandas as pd
 
 from app import app
-from data.connet_db import get_db, query_db
+from data.connet_db import get_db
 from models.bill import BILL
-
+from libs.db_tools import get_db_latest_create_time
 
 pd.set_option('display.max_columns', None)  # 显示所有列
 pd.set_option('display.width', 4000)  # 页面宽度
@@ -73,25 +73,10 @@ def serializer_data(df: pd.DataFrame) -> pd.DataFrame:
     return df_parse
 
 
-def get_db_latest_create_time(table_name="bills") -> (None, datetime):
-    """
-    获取表中最新更新时间
-    :param table_name: 表名
-    """
-    query = f"""
-        SELECT MAX(create_time) AS last_time 
-        FROM {table_name}
-    """
-    result = query_db(query, one=True)
-    if result is not None:
-        return datetime.strptime(result['last_time'], '%Y-%m-%d %H:%M:%S')
-    return result
-
-
 def create_or_append_df_to_sql(df: pd.DataFrame, table_name="bills"):
     """添加数据到表，如果表不存在将自动创建"""
     df = serializer_data(df)
-    BILL.columns.remove('id')
+    BILL.columns.remove('id', 'auto_add_time')
     df = df[BILL.columns]
     last_time = get_db_latest_create_time()
     if last_time is not None:
@@ -104,6 +89,7 @@ def create_or_append_df_to_sql(df: pd.DataFrame, table_name="bills"):
 if __name__ == '__main__':
     with app.app_context():
         db = get_db('database.db')
-        df = pd.read_csv('2019账.csv')
-        # df = serializer_1718_data(df)
-        create_or_append_df_to_sql(df)
+        # df = pd.read_csv('2019账.csv')
+        # # df = serializer_1718_data(df)
+        # create_or_append_df_to_sql(df)
+        db.execute(BILL.create_bill_text)
