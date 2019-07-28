@@ -6,6 +6,17 @@ import pandas as pd
 from data.connet_db import get_db, query_db
 from libs.db_tools import validate_ordering
 
+__migrate = """
+表迁移
+
+INSERT INTO bills(
+create_time, pay_date, transaction_type, transaction_item, 
+amount, payment, pay_type, need) 
+SELECT create_time, pay_date,transaction_type, 
+transaction_item, amount, payment, pay_type, need 
+FROM bills_without_autoat;
+"""
+
 
 class BILL:
     create_bill_text = """
@@ -19,7 +30,7 @@ class BILL:
             `payment` TEXT NOT NULL, -- 支付方式
             `pay_type` TEXT NOT NULL, -- 支付类型
             `need` INTEGER NOT NULL, -- 需要程度
-            `auto_add_time` DATETIME DEFAULT CURRENT_TIMESTAMP  -- 数据导入时间
+            `auto_add_time` DATETIME DEFAULT (datetime('now','localtime'))  -- 数据导入时间
 )"""
     columns = ['id', 'create_time', 'pay_date', 'transaction_type', 'transaction_item', 'amount', 'payment', 'pay_type',
                'need', 'auto_add_time']
@@ -151,3 +162,10 @@ class BILL:
         type_of_data['total_eat'] = round(type_of_data['total_eat'], self.accuracy)
         return type_of_data
 
+
+# if __name__ == '__main__':
+#     from app import app
+#     with app.app_context():
+#         db = get_db('database.db')
+#         # 创表
+#         db.execute(BILL.create_bill_text)
