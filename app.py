@@ -1,6 +1,7 @@
-from factory_app import create_app
+from factory_app import create_app, after_create_app
 
 app = create_app()
+after_create_app(app)
 
 
 @app.route('/ping/')
@@ -9,4 +10,4 @@ def ping():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(app.config['DEBUG'])

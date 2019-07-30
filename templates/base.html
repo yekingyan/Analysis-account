@@ -12,16 +12,20 @@
         <script src="{{ url_for('static', filename='extra_js/vue.js') }}"></script>
 
         <!-- 引入Element样式 -->
-{#        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">#}
+        {#        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">#}
         <link rel="stylesheet" href="{{ url_for('static', filename='css/ele_index.css') }}">
         <!-- 引入Element组件库 -->
-{#        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>#}
+        {#        <script src="https://unpkg.com/element-ui@2.10.1/lib/index.js"></script>#}
         <script src="{{ url_for('static', filename='extra_js/ele_index.js') }}"></script>
 
         <!-- 引入 v-charts -->
         <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/v-charts/lib/index.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/v-charts/lib/style.min.css">
+
+        <!--引入 axios-->
+        {#        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>#}
+        <script src="{{ url_for('static', filename='extra_js/axios.js') }}"></script>
 
         <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
         <script src="{{ url_for('static', filename='js/base_utils.js') }}"></script>
@@ -55,9 +59,31 @@
                     </el-submenu>
                 </el-submenu>
                 <el-menu-item index="3" disabled>消息中心</el-menu-item>
-                <el-menu-item index="admin_settings">设置</el-menu-item>
+                <el-menu-item index="admin_settings" class="el-icon-setting">设置</el-menu-item>
+
+                <el-menu-item v-if="username" class="el-icon-scissors" style="float: right;" @click="logout">登出
+                </el-menu-item>
+                <el-menu-item v-if="username" style="float: right;" @click="logout">[[username]]</el-menu-item>
+                <el-menu-item v-if="!username" class="el-icon-s-custom" style="float: right;" @click="dialogFormVisible=true">登录
+                </el-menu-item>
             </el-menu>
         </el-header>
+
+        <el-dialog title="登陆" :visible.sync="dialogFormVisible">
+            <el-form :model="loginForm" status-icon :rules="rules" ref="loginForm">
+                <el-form-item label="用户名" label-width="80px" prop="username">
+                    <el-input v-model="loginForm.username" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="密码" label-width="80px" prop="password">
+                    <el-input v-model="loginForm.password" autocomplete="off" type="password"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="login" v-loading.fullscreen.lock="fullscreenLoading">确 定</el-button>
+            </div>
+        </el-dialog>
+
     </el-container>
 </div>
 
@@ -71,6 +97,9 @@
 </div>
 
 <script>
+    let authStateUrl = '{{ url_for('auth.state')|safe }}';
+    let loginUrl = '{{ url_for('auth.login')|safe }}';
+    let logoutUrl = '{{ url_for('auth.logout')|safe }}';
 
     // 前端url的endpoint与反向路由建立联系
     const URL_ROUTE = new Map([
@@ -87,25 +116,94 @@
         data: function () {
             return {
                 activeIndex: '1', // 当前激活菜单的 index
-
+                username: null, // 用户名
+                dialogFormVisible: false, // 登陆弹窗可见
+                fullscreenLoading: false, // 登陆中的loading
+                loginForm: {
+                    username: '',
+                    password: '',
+                },
+                rules: {
+                    username: [
+                        {required: true, message: '请输入用户名', trigger: 'blur'},
+                    ],
+                    password: [
+                        {required: true, message: '请输入密码', trigger: 'blur'},
+                    ],
+                }
             };
         },
         methods: {
             handleSelect(key, keyPath) {
                 // 菜单点击，跳转
-                log('key', key)
-                log('keyPath', keyPath)
                 if (URL_ROUTE.has(key)) {
                     window.location.pathname = URL_ROUTE.get(key)
                 }
             },
+
+            login() {
+                this.dialogFormVisible = false // 弹窗消失
+                this.fullscreenLoading = true // loading
+                log(this.loginForm)
+                axios.post(loginUrl, this.loginForm)
+                    .then((res) => {
+                        let data = res.data
+                        this.username = data.username
+                        sessionStorage.username = data.username
+                        window.location.reload()
+                    })
+                    .catch((err) => {
+                        let res = err.response
+                        this.$message.error(`code:${res.status} ${res.data.msg}`);
+                    })
+                    .finally(() => {
+                        this.fullscreenLoading = false;
+                    })
+            },
+
+            logout() {
+                // 清session
+                axios.get(logoutUrl)
+                // 删sessionStorage
+                sessionStorage.username = ''
+                this.username = ''
+                window.location.reload()
+            },
+
+            activeMenu() {
+                // active当前页面的菜单
+                for (let [k, v] of URL_ROUTE) {
+                    if (window.location.pathname === v) {
+                        this.activeIndex = k
+                    }
+                }
+            },
+
+            getUserState() {
+                // 请求，判断用户状态，写入sessionStorage
+                log('request')
+                axios.get(authStateUrl).then(res => {
+                    let data = res.data
+                    sessionStorage.hasRequestAuth = true
+                    log(data)
+                    if (data.has_login) {
+                        sessionStorage.username = data.username
+                        this.username = sessionStorage.username
+                    }
+                })
+            },
         },
         created() {
             // active当前页面的菜单
-            for(let [k, v] of URL_ROUTE) {
-                if (window.location.pathname === v) {
-                    this.activeIndex = k
-                }
+            this.activeMenu()
+
+            // 获取用户状态
+            if (!sessionStorage.hasRequestAuth) {
+                log('req')
+                this.getUserState()
+            } else {
+                log('get ss')
+                this.username = sessionStorage.username
             }
 
         }

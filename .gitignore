@@ -12,3 +12,4 @@ venv/
 data/*.csv
 data/database.db
 uploads/
+secure.py

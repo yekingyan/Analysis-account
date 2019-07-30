@@ -163,9 +163,10 @@ class BILL:
         return type_of_data
 
 
-# if __name__ == '__main__':
-#     from app import app
-#     with app.app_context():
-#         db = get_db('database.db')
-#         # 创表
-#         db.execute(BILL.create_bill_text)
+if __name__ == '__main__':
+    import os
+    from app import app
+    with app.app_context():
+        # 运行时路径与app.py保持一致
+        os.chdir('..')
+        BILL.create_bill()

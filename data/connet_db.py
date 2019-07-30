@@ -14,7 +14,19 @@ def make_dicts(cursor, row):
                 for idx, value in enumerate(row))
 
 
-def get_db(db_path=None):
+# def get_db(db_path=None):
+#     """
+#     :param db_path: sqlite路径
+#     :return: db
+#     """
+#     db = getattr(g, '_database', None)
+#     if db is None:
+#         db = g._database = sqlite3.connect(db_path or current_app.config['DATABASE'])
+#         db.row_factory = make_dicts
+#     return db
+
+
+def _get_db(db_path) -> sqlite3.connect:
     """
     :param db_path: sqlite路径
     :return: db
@@ -24,6 +36,16 @@ def get_db(db_path=None):
         db = g._database = sqlite3.connect(db_path or current_app.config['DATABASE'])
         db.row_factory = make_dicts
     return db
+
+
+def get_db(db_path=None) -> sqlite3.connect:
+    """
+    无授权用户返回假数据的库
+    """
+    if g.user_authenticated:
+        return _get_db(db_path or current_app.config['DATABASE'])
+    else:
+        return _get_db(current_app.config['FAKE_DATABASE'])
 
 
 @contextmanager
@@ -46,17 +68,6 @@ def get_db_without_context(db_path=None):
 #         db.close()
 
 
-# def query_db(query, args=(), one=False):
-#     """
-#     for user in query_db('select * from users'):
-#     print user['username'], 'has the id', user['user_id']
-#     """
-#     cur = get_db().execute(query, args)
-#     rv = cur.fetchall()
-#     cur.close()
-#     return (rv[0] if rv else None) if one else rv
-
-
 def query_db(query, args=(), one=False, db_path=None):
     """
     for user in query_db('select * from users'):
@@ -67,4 +78,15 @@ def query_db(query, args=(), one=False, db_path=None):
         rv = cur.fetchall()
     return (rv[0] if rv else None) if one else rv
 
+
+def insert_db(query, args=(), one=True, db_path=None):
+    with db_manager(db_path) as db:
+        try:
+            if one:
+                db.executemany(query, args)
+            else:
+                db.execute(query, args)
+            db.commit()
+        except:
+            db.rollback()
 
