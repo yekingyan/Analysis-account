@@ -13,6 +13,7 @@ from libs.db_tools import (
     get_db_latest_create_time,
     get_db_latest_auto_add_time,
 )
+from libs.auth import login_required
 from libs.upload import secure_filename_utf8
 from data.import_data import create_or_append_df_to_sql
 
@@ -30,6 +31,7 @@ def settings():
 
 
 @admin.route('/upload/', methods=['POST'])
+@login_required
 def upload():
     try:
         file = request.files['file']

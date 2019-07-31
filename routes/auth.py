@@ -17,7 +17,7 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/register/', methods=['POST'])
 def register():
-    form = LoginForm(request.form)
+    form = LoginForm(request.form_with_json)
     if not form.validate():
         return jsonify(form.errors), 400
     username = form.data['username']
@@ -29,7 +29,6 @@ def register():
 
 @auth.route('/login/', methods=['POST'])
 def login():
-    print(request.form_with_json)
     form = LoginForm(request.form_with_json)
     if not form.validate():
         return jsonify(form.errors), 400
