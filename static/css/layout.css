@@ -26,3 +26,7 @@
 .mt-50 {
     margin-top: 50px;
 }
+
+.el-dialog {
+    max-width: 400px;
+}
