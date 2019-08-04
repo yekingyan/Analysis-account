@@ -8,6 +8,7 @@ from flask import (
     render_template,
     current_app,
     jsonify,
+    send_from_directory,
 )
 from libs.db_tools import (
     get_db_latest_create_time,
@@ -48,3 +49,12 @@ def upload():
     df.to_csv(path, index=False, encoding='utf_8_sig')
 
     return jsonify({'patch_len': len(df_patch)}), 201
+
+
+@admin.route('/down2/', methods=['get'])
+@login_required
+def download_db():
+    # file_name = 'database.db'
+    path, file_name = current_app.config['DATABASE'].split('/')
+    print(path,  file_name)
+    return send_from_directory(path, file_name, as_attachment=True)

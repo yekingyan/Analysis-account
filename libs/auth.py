@@ -6,7 +6,6 @@ from flask import g, jsonify
 def login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):
-        print(g.user_authenticated)
         if g.user_authenticated:
             return func(*args, **kwargs)
         else:
