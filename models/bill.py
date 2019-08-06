@@ -1,5 +1,6 @@
 from datetime import date
 from copy import copy
+from dateutil.relativedelta import relativedelta
 
 import pandas as pd
 
@@ -35,19 +36,46 @@ class BILL:
     columns = ['id', 'create_time', 'pay_date', 'transaction_type', 'transaction_item', 'amount', 'payment', 'pay_type',
                'need', 'auto_add_time']
     accuracy = 3  # 计算精度
-    start_pay_date = None
-    end_pay_date = None
-    data = None
-    df_data = None
-    types_columns = None
+
+    start_pay_date = None  # 开始支付日期
+    end_pay_date = None  # 结束支付日期
+    chain_start_date = None  # 环比开始日期
+    chain_end_date = None  # 环比结束日期
+    last_year_start_date = None  # 同比开始日期
+    last_year_end_date = None  # 同比结束日期
+
+    data = None  # 当前时间段内的dict数据
+    df_data = None  # 当前时间段内的df数据
+    total_data = None  # 当前+同环比dict数据
+    df_total_data = None  # 当前+同环比df数据
+    types_columns = None  # 当前时间段内各消费类型
     month_field = 'pay_month'  # 指代月份的列名
 
     def __init__(self, start_pay_date: date, end_pay_date: date, ordering='id'):
         self.start_pay_date = start_pay_date
         self.end_pay_date = end_pay_date
-        # origin data
-        self.data = self.get_range_day_data(start_pay_date, end_pay_date, ordering)
-        self.df_data = pd.DataFrame(self.data)
+        # 同比时间段
+        self.chain_start_date = start_pay_date - (end_pay_date - start_pay_date)
+        self.chain_end_date = start_pay_date
+        # 环比时间段
+        self.last_year_start_date = start_pay_date - relativedelta(years=1)
+        self.last_year_end_date = end_pay_date - relativedelta(years=1)
+
+        print(start_pay_date, end_pay_date)
+        print(self.chain_start_date, self.chain_end_date)
+        print(self.last_year_start_date, self.last_year_end_date)
+
+        # 所有数据
+        self.total_data = self.get_range_day_data(
+            self.last_year_start_date, self.last_year_end_date, self.chain_start_date, end_pay_date, ordering)
+        self.df_total_data = pd.DataFrame(self.total_data)
+        self.df_total_data['pay_date_datetime'] = pd.to_datetime(self.df_total_data['pay_date'])
+        # 当前数据
+        self.df_data = self.df_total_data[(start_pay_date < self.df_total_data['pay_date_datetime'])
+                                          & (self.df_total_data['pay_date_datetime'] < end_pay_date)]
+        del self.df_data['pay_date_datetime']
+        self.data = self.df_data.to_dict(orient='records')
+
         # columns
         self.types_columns = self._get_types_columns()
         self.day_columns = ['pay_date', 'amount', *self.types_columns]
@@ -71,19 +99,21 @@ class BILL:
         return self.df_data['transaction_type'].drop_duplicates().tolist()
 
     @classmethod
-    def get_range_day_data(cls, start_pay_date: date, end_pay_date: date, ordering) -> (dict, None):
+    def get_range_day_data(cls, last_year_start_date: date, last_year_end_date: date,
+                           chain_start_date: date, end_pay_date: date, ordering='-id') -> (dict, None):
         """
-        取一段时间(pay_date)的数据
+        取两段时间(pay_date)的数据
+        环比 一段， 同比+当前 一段
         """
         if not validate_ordering(ordering, cls.columns):
             raise Exception('排序字段不在表列名中')
         query = f"""
             SELECT *
             FROM bills
-            WHERE pay_date BETWEEN ? AND ?
+            WHERE pay_date BETWEEN ? AND ? OR pay_date BETWEEN ? AND ?
             ORDER BY {ordering};
         """
-        data = query_db(query, (start_pay_date, end_pay_date))
+        data = query_db(query, (last_year_start_date, last_year_end_date, chain_start_date, end_pay_date))
         return data
 
     def get_amount_of_granularity(self, granularity: str, need_columns: list) -> pd.DataFrame:
@@ -161,6 +191,10 @@ class BILL:
                 type_of_data.pop(k)
         type_of_data['total_eat'] = round(type_of_data['total_eat'], self.accuracy)
         return type_of_data
+
+    def time_of_ratio(self):
+        """同比、环比"""
+        ...
 
 
 if __name__ == '__main__':
