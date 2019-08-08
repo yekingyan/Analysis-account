@@ -3,7 +3,6 @@ from flask import Flask
 from routes.expend import expend
 from routes.admin import admin
 from routes.auth import auth
-# from routes.auth import auth
 
 
 def register_blueprint(app):

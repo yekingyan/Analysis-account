@@ -52,6 +52,7 @@ def days():
     pie_list = df_types_amount.to_dict('records')
     # 大类型(选择性合并几个小类型)合计数， 详情
     type_of_data = bill.total_amount_by_types_merge_eat(df_types_amount)
+    type_of_data = {k: v for k, v in type_of_data.items() if k in ['amount', 'total_eat']}
 
     # 同比 环比
     ratio = bill.time_of_ratio()
@@ -90,6 +91,7 @@ def months():
 
     # 大类型(选择性合并几个小类型)合计数， 详情
     type_of_data = bill.total_amount_by_types_merge_eat(df_types_amount)
+    type_of_data = {k: v for k, v in type_of_data.items() if k in ['amount', 'total_eat']}
 
     # 同比 环比
     ratio = bill.time_of_ratio()

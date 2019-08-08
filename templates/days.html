@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    {% if request.path == url_for('expend.days')%}
+    {% if request.path == url_for('expend.days') %}
         日颗粒度统计
     {% else %}
         月颗粒度统计
@@ -11,6 +11,11 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ele_table.css') }}">
+    <style>
+        .el-card__body {
+            padding: 10px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -48,9 +53,26 @@
 
                     <div>
                         <el-card style="max-width: 430px;" shadow="hover">
-                            <div v-for="(v, k) in cardContend" :key="k">
-                                <div>[[ k ]]： <span>[[ v ]]</span></div>
-                            </div>
+                            <el-row>
+                                <el-col :span="24" v-for="(v, k) in cardContend" :key="k">
+                                    <div class="el-dialog--center">
+                                        <div>current_[[ k ]]： <span>[[ v ]]</span></div>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12">
+                                    <div v-for="(v, k) in m2m" :key="k" class="mt-8">
+                                        <span>[[ k ]]： <span>[[ v ]]%</span></span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div v-for="(v, k) in y2y" :key="k" class="mt-8">
+                                        <span>[[ k ]]： <span>[[ v ]]%</span></span>
+                                    </div>
+                                </el-col>
+                            </el-row>
+
                         </el-card>
                     </div>
                 </el-col>
@@ -193,6 +215,8 @@
                     dateRange: [], // 搜索时间, 天
                     monthRange: [], // 搜索时间, 月
                     cardContend: res.type_of_data,
+                    m2m: res.ratio.m2m,
+                    y2y: res.ratio.y2y,
                 }
             },
             methods: {
