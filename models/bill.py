@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from copy import copy
 from dateutil.relativedelta import relativedelta
 
@@ -48,6 +48,8 @@ class BILL:
     df_data = None  # 当前时间段内的df数据
     total_data = None  # 当前+同环比dict数据
     df_total_data = None  # 当前+同环比df数据
+    df_chain = None  # df环比
+    df_last_year = None  # df同比
     types_columns = None  # 当前时间段内各消费类型
     month_field = 'pay_month'  # 指代月份的列名
 
@@ -61,18 +63,19 @@ class BILL:
         self.last_year_start_date = start_pay_date - relativedelta(years=1)
         self.last_year_end_date = end_pay_date - relativedelta(years=1)
 
-        print(start_pay_date, end_pay_date)
-        print(self.chain_start_date, self.chain_end_date)
-        print(self.last_year_start_date, self.last_year_end_date)
-
         # 所有数据
         self.total_data = self.get_range_day_data(
             self.last_year_start_date, self.last_year_end_date, self.chain_start_date, end_pay_date, ordering)
         self.df_total_data = pd.DataFrame(self.total_data)
-        self.df_total_data['pay_date_datetime'] = pd.to_datetime(self.df_total_data['pay_date'])
-        # 当前数据
-        self.df_data = self.df_total_data[(start_pay_date < self.df_total_data['pay_date_datetime'])
-                                          & (self.df_total_data['pay_date_datetime'] < end_pay_date)]
+        self.df_total_data['pay_date_datetime'] = self.df_total_data['pay_date'].apply(
+            lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S').date())
+        # 当前数据 环比数据 同比数据
+        self.df_data = self.df_total_data[self.df_total_data['pay_date_datetime'].between(start_pay_date, end_pay_date)]
+        self.df_chain = self.df_total_data[self.df_total_data['pay_date_datetime'].between(
+            self.chain_start_date, self.chain_end_date)]
+        self.df_last_year = self.df_total_data[self.df_total_data['pay_date_datetime'].between(
+            self.last_year_start_date, self.last_year_end_date)]
+
         del self.df_data['pay_date_datetime']
         self.data = self.df_data.to_dict(orient='records')
 
@@ -116,18 +119,18 @@ class BILL:
         data = query_db(query, (last_year_start_date, last_year_end_date, chain_start_date, end_pay_date))
         return data
 
-    def get_amount_of_granularity(self, granularity: str, need_columns: list) -> pd.DataFrame:
+    def get_amount_of_granularity(self, granularity: str, need_columns: list, df: pd.DataFrame) -> pd.DataFrame:
         """
         根据不同的颗粒度，返回相应的类型（col）所对应的amount(row)
         :param granularity: 数据分组的颗粒度，需在self.df_data的列名中
         :param need_columns: 需要保留的列
+        :param df: 需要解析的数据
 
         pay_month   amount     交通     ...
         4           6527.14    734.3    ...
         5           7021.42    630.0    ...
         """
-        df = self.df_data
-        if df.empty or granularity not in self.df_data:
+        if df.empty or granularity not in df:
             raise Exception('无效的granularity 或 时间区间内数据为空')
 
         # granularity时间内  各个类型 对应的 amount
@@ -148,30 +151,32 @@ class BILL:
         [df_amount_and_types.drop(col, axis=1, inplace=True) for col in list(df_amount_and_types) if col not in need_columns]
         return df_amount_and_types
 
-    def daily_amount_by_types(self) -> pd.DataFrame:
+    def daily_amount_by_types(self, df=None) -> pd.DataFrame:
         """
         以天为颗粒度
         总数，各类型数
         """
+        df = df if df is not None else self.df_data
         granularity = 'pay_date'
         need_columns = self.day_columns
-        df_data = self.get_amount_of_granularity(granularity, need_columns)
+        df_data = self.get_amount_of_granularity(granularity, need_columns, df)
         return df_data
 
-    def monthly_amount_by_types(self) -> pd.DataFrame:
+    def monthly_amount_by_types(self, df=None) -> pd.DataFrame:
         """
         以月为颗粒度
         总数，各类型数
         """
+        df = df if df is not None else self.df_data
         granularity = self.month_field
         need_columns = self.month_columns
-        self.df_data[self.month_field] = pd.to_datetime(self.df_data['pay_date']).dt.month.astype(str)
-        df_data = self.get_amount_of_granularity(granularity, need_columns)
+        df[self.month_field] = pd.to_datetime(df['pay_date']).dt.month.astype(str)
+        df_data = self.get_amount_of_granularity(granularity, need_columns, df)
         return df_data
 
-    def total_amount_by_types(self) -> pd.DataFrame:
+    def total_amount_by_types(self, df=None) -> pd.DataFrame:
         """类型合计金额"""
-        df = self.df_data
+        df = df if df is not None else self.df_data
         df_transaction_type = df.groupby(['transaction_type'])['amount'].sum().reset_index().round(self.accuracy)
         df_transaction_type = df_transaction_type.rename(columns={'transaction_type': '类型'})
         return df_transaction_type
@@ -192,9 +197,33 @@ class BILL:
         type_of_data['total_eat'] = round(type_of_data['total_eat'], self.accuracy)
         return type_of_data
 
-    def time_of_ratio(self):
+    def time_of_ratio(self) -> dict:
         """同比、环比"""
-        ...
+        df_current_amount_by_types = self.total_amount_by_types()
+        df_chain_amount_by_types = self.total_amount_by_types(self.df_chain)
+        df_last_year_amount_by_types = self.total_amount_by_types(self.df_last_year)
+
+        current_merge_eat = self.total_amount_by_types_merge_eat(df_current_amount_by_types)
+        chain_merge_eat = self.total_amount_by_types_merge_eat(df_chain_amount_by_types)
+        last_year_merge_eat = self.total_amount_by_types_merge_eat(df_last_year_amount_by_types)
+
+        data = {
+            'origin': {
+                'current': current_merge_eat,
+                'chain': chain_merge_eat,
+                'last_year': last_year_merge_eat,
+            },
+            'm2m': {},
+            'y2y': {},
+        }
+        for k, v in current_merge_eat.items():
+            # 各个类型分别计算环比、同比
+            m2m = (v - chain_merge_eat.get(k, 0)) / (chain_merge_eat.get(k) or 1) * 100
+            y2y = (v - last_year_merge_eat.get(k, 0)) / (last_year_merge_eat.get(k) or 1) * 100
+
+            data['m2m']['m2m_'+k] = round(m2m, self.accuracy)
+            data['y2y']['y2y_'+k] = round(y2y, self.accuracy)
+        return data
 
 
 if __name__ == '__main__':

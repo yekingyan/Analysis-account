@@ -53,12 +53,16 @@ def days():
     # 大类型(选择性合并几个小类型)合计数， 详情
     type_of_data = bill.total_amount_by_types_merge_eat(df_types_amount)
 
+    # 同比 环比
+    ratio = bill.time_of_ratio()
+
     return template_or_json(request, 'days.html', data={
         'rows': data,
         'columns': bill.day_columns,
         'count': len(df_data),
         'pie': pie_list,
         'type_of_data': type_of_data,
+        'ratio': ratio,
     })
 
 
@@ -87,10 +91,14 @@ def months():
     # 大类型(选择性合并几个小类型)合计数， 详情
     type_of_data = bill.total_amount_by_types_merge_eat(df_types_amount)
 
+    # 同比 环比
+    ratio = bill.time_of_ratio()
+
     return template_or_json(request, 'days.html', data={
         'rows': data,
         'columns': bill.month_columns,
         'count': len(df_data),
         'pie': pie_list,
         'type_of_data': type_of_data,
+        'ratio': ratio,
     })
