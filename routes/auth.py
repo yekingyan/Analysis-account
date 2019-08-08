@@ -38,6 +38,7 @@ def login():
     pw_hash = current_app.config['PASSWORD']
     if username == the_only_user and check_password_hash(pw_hash, password):
         session['username'] = username
+        session.permanent = True
         return jsonify({'username': username})
     else:
         return jsonify({'msg': '登陆失败'}), 401
