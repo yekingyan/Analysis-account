@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from routes.expend import expend
 from routes.admin import admin
+from routes.auth import auth
 # from routes.auth import auth
 
 
@@ -11,6 +12,7 @@ def register_blueprint(app):
     """
     app.register_blueprint(expend, url_prefix='/expend')
     app.register_blueprint(admin, url_prefix='/admin')
+    app.register_blueprint(auth, url_prefix='/auth')
 
 
 def create_essential_folder(app):
@@ -34,6 +36,4 @@ def create_app():
 def after_create_app(app):
     """需要import app的"""
     from routes import middleware
-    from routes.auth import auth
-    app.register_blueprint(auth, url_prefix='/auth')
 

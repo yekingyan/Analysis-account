@@ -13,3 +13,6 @@ data/*.csv
 data/database.db
 uploads/
 secure.py
+
+*__test.html
+*__test.py
