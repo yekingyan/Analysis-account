@@ -63,7 +63,7 @@
             </el-menu>
         </el-header>
 
-        <el-dialog title="登陆" :visible.sync="dialogFormVisible" width="400px">
+        <el-dialog title="登陆" :visible.sync="dialogFormVisible">
             <el-form :model="loginForm" status-icon :rules="rules" ref="loginForm">
                 <el-form-item label="用户名" label-width="80px" prop="username">
                     <el-input v-model="loginForm.username" autocomplete="off"></el-input>

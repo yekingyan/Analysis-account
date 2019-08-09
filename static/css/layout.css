@@ -37,4 +37,5 @@
 
 .el-dialog {
     max-width: 400px;
+    width: auto!important;
 }
