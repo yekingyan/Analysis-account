@@ -2,11 +2,13 @@ from flask import (
     request,
     session,
     g,
+    Blueprint,
 )
-from app import app
+
+middleware = Blueprint('middleware', __name__)
 
 
-@app.before_request
+@middleware.before_app_request
 def session_auth():
     """用户标识"""
     username = session.get('username')
@@ -18,7 +20,7 @@ def session_auth():
         g.user_authenticated = False
 
 
-@app.before_request
+@middleware.before_app_request
 def construct_request():
     """同时获取form 与json 数据"""
     json_data = request.get_json() or {}
@@ -27,11 +29,11 @@ def construct_request():
     request.form_with_json = form_data
 
 
-@app.before_request
+@middleware.before_app_request
 def request_log():
     ...
 
 
-@app.after_request
+@middleware.after_request
 def response_log(res):
     return res
