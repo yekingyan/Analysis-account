@@ -221,8 +221,8 @@ class BILL:
             m2m = (v - chain_merge_eat.get(k, 0)) / (chain_merge_eat.get(k) or 1) * 100
             y2y = (v - last_year_merge_eat.get(k, 0)) / (last_year_merge_eat.get(k) or 1) * 100
 
-            data['m2m']['m2m_'+k] = round(m2m, self.accuracy)
-            data['y2y']['y2y_'+k] = round(y2y, self.accuracy)
+            data['m2m']['m2m_'+k] = round(m2m, 2)
+            data['y2y']['y2y_'+k] = round(y2y, 2)
         return data
 
 
