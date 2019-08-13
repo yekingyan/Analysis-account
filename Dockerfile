@@ -5,14 +5,13 @@ COPY . /app
 
 RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list \
     && sed -i 's|security.debian.org/debian-security|mirrors.ustc.edu.cn/debian-security|g' /etc/apt/sources.list \
-    && buildDeps='curl vim' \
+    && tools='curl iputils-ping net-tools vim' \
     && apt-get update \
-    && apt-get install -y $buildDeps \
+    && apt-get install -y $tools \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get purge -y --auto-remove $buildDeps \
-    && apt-get clean all \
+    && apt-get clean \
     # 换时区
-    && echo 'Asia/Shanghai' > /etc/timezone \
+    && ln -fs /usr/share/zoneinfo/US/Asia/Shanghai /etc/localtime \
     && dpkg-reconfigure -f noninteractive tzdata \
     # python 依赖
     && pip install --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple \

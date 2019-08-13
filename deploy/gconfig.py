@@ -5,7 +5,7 @@ monkey.patch_all()
 import multiprocessing
 
 debug = 'true'
-bind = '127.0.0.1:5354'
+bind = '0.0.0.0:5354'
 # logs
 loglevel = 'debug'
 pidfile = 'logs/gunicorn.pid'
