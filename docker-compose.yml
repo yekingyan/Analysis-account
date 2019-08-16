@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  web:
+    #  build: .
+    image: yekingyan/analysisaccount
+    restart: unless-stopped
+    volumes:
+      - ~/ac_volumes/logs:/app/logs
+      - ~/ac_volumes/secure.py:/app/settings/secure.py:ro
+      - ~/ac_volumes/database.db:/app/data/database.db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    ports:
+      - "8000:5354"
