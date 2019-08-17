@@ -43,12 +43,12 @@ $ DOCKER_BUILDKIT=1 docker build -t yekingyan/analysisaccount .
 #### pip环境有变的打包
 ```
 #方法一：一次性build完
-$ DOCKER_BUILDKIT=1 docker build -t new --build-arg PIP_ENV=new .
+$ DOCKER_BUILDKIT=1 docker build -t yekingyan/analysisaccount --build-arg PIP_ENV=new .
 
 #方法二：留下中间层方便下次使用
 $ docker build --target new-env -t yekingyan/analysisaccount:env .
 $ docker push yekingyan/analysisaccount:env
-$ DOCKER_BUILDKIT=1 docker build -t old .
+$ DOCKER_BUILDKIT=1 docker build -t yekingyan/analysisaccount .
 ```
 
 
