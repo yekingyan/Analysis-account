@@ -4,6 +4,7 @@ services:
   web:
     #  build: .
     image: yekingyan/analysisaccount
+    container_name: ac_web
     restart: unless-stopped
     volumes:
       - ~/ac_volumes/logs:/app/logs
@@ -16,3 +17,10 @@ services:
         max-file: "10"
     ports:
       - "8000:5354"
+    networks:
+      - nginx_network  #proxy and app must be in same network
+
+
+networks:
+  nginx_network:
+    external: true
