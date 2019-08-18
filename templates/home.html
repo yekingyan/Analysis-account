@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+
+{% block content %}
+    <div id="app-home" :style="height">
+        <el-image :src="src" class="raven">
+            <div slot="placeholder" class="image-slot">
+                加载中<span class="dot">...</span>
+            </div>
+        </el-image>
+    </div>
+
+    <style>
+        .raven {
+            margin: 0 auto;
+            max-width: 500px;
+            display: block;
+        }
+    </style>
+
+{% endblock %}
+
+{% block after_script %}
+    <script>
+        let src = "{{ url_for('static', filename='raven.gif')|safe }}";
+
+        let app1 = new Vue({
+            el: '#app-home',
+            delimiters: ['[[', ']]'],
+            data: function () {
+                return {
+                    height: {'min-height': window.innerHeight - 150 + 'px'},
+                    src: src,
+                }
+            },
+            methods: {},
+        })
+    </script>
+{% endblock %}

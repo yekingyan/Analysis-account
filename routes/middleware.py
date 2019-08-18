@@ -3,6 +3,7 @@ from flask import (
     session,
     g,
     Blueprint,
+    current_app,
 )
 
 middleware = Blueprint('middleware', __name__)
@@ -37,3 +38,13 @@ def request_log():
 @middleware.after_request
 def response_log(res):
     return res
+
+
+@middleware.app_context_processor
+def utility_processor():
+    """模板 上下文处理器"""
+    debug = current_app.config['DEBUG']
+    return dict(
+        debug=debug,
+        user=g.user,
+    )

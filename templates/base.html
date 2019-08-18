@@ -4,12 +4,18 @@
     {% block head %}
         <meta charset="UTF-8">
         <title>
+            烟灰烬 -
             {% block title %}
                 base
             {% endblock %}
         </title>
-        <!-- 引入Vue -->
-        <script src="{{ url_for('static', filename='extra_js/vue.js') }}"></script>
+        {% if debug %}
+            <!-- 引入Vue -->
+            <script src="{{ url_for('static', filename='extra_js/vue.js') }}"></script>
+        {% else %}
+            <!-- 引入Vue -->
+            <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        {% endif %}
 
         <!-- 引入Element样式 -->
         {#        <link rel="stylesheet" href="https://unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css">#}
@@ -24,11 +30,12 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/v-charts/lib/style.min.css">
 
         <!--引入 axios-->
-        {#        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>#}
-        <script src="{{ url_for('static', filename='extra_js/axios.js') }}"></script>
+        {#        <script src="{{ url_for('static', filename='extra_js/axios.js') }}"></script>#}
+        <script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.min.js"></script>
 
         <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
         <script src="{{ url_for('static', filename='js/base_utils.js') }}"></script>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     {% endblock %}
 </head>
 <body>
@@ -43,23 +50,31 @@
                     mode="horizontal"
                     @select="handleSelect"
                     active-text-color="#ffd04b">
-                <el-menu-item index="1">处理中心</el-menu-item>
+                <el-menu-item index="main_home">Home</el-menu-item>
                 <el-submenu index="2">
-                    <template slot="title">我的工作台</template>
+                    <template slot="title">Expend</template>
                     <el-menu-item index="expend_days">days</el-menu-item>
                     <el-menu-item index="expend_months">months</el-menu-item>
                     <el-menu-item index="expend_journal">journal</el-menu-item>
                     <el-submenu index="2-4">
-                        <template slot="title">选项4</template>
-                        <el-menu-item index="2-4-1">选项1</el-menu-item>
+                        <template slot="title">选项</template>
+                        <el-menu-item index="2-4-1" disabled>1</el-menu-item>
                     </el-submenu>
                 </el-submenu>
-                <el-menu-item index="3" disabled>消息中心</el-menu-item>
-                <el-menu-item index="admin_settings" class="el-icon-setting">设置</el-menu-item>
+                <el-menu-item index="earning_salary" :disabled="showPrivate">Earning</el-menu-item>
 
-                <el-menu-item v-if="username" class="el-icon-scissors" style="float: right;" @click="logout">登出</el-menu-item>
+                <el-submenu index="4" :disabled="showPrivate">
+                    <template slot="title">Investment</template>
+                    <el-menu-item index="investment_rtf">EFT</el-menu-item>
+                </el-submenu>
+                <el-menu-item index="admin_settings" class="el-icon-setting">Setting</el-menu-item>
+
+                <el-menu-item v-if="username" class="el-icon-scissors" style="float: right;" @click="logout">登出
+                </el-menu-item>
                 <el-menu-item v-if="username" style="float: right;">[[username]]</el-menu-item>
-                <el-menu-item v-if="!username" class="el-icon-s-custom" style="float: right;" @click="dialogFormVisible=true">登录</el-menu-item>
+                <el-menu-item v-if="!username" class="el-icon-s-custom" style="float: right;"
+                              @click="dialogFormVisible=true">登录
+                </el-menu-item>
             </el-menu>
         </el-header>
 
@@ -69,7 +84,8 @@
                     <el-input v-model="loginForm.username" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="密码" label-width="80px" prop="password">
-                    <el-input v-model="loginForm.password" autocomplete="off" type="password" @keyup.enter.native="login"></el-input>
+                    <el-input v-model="loginForm.password" autocomplete="off" type="password"
+                              @keyup.enter.native="login"></el-input>
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -94,6 +110,8 @@
     let authStateUrl = '{{ url_for('auth.state')|safe }}';
     let loginUrl = '{{ url_for('auth.login')|safe }}';
     let logoutUrl = '{{ url_for('auth.logout')|safe }}';
+    let debug = '{{ debug|safe }}' === 'True' ? true : false;
+    let user = '{{ user|safe }}' === 'None' ? null : '{{ user|safe }}';
 
     // 前端url的endpoint与反向路由建立联系
     const URL_ROUTE = new Map([
@@ -101,6 +119,7 @@
         ['expend_months', '{{  url_for('expend.months')|safe }}'],
         ['expend_journal', '{{  url_for('expend.journal')|safe }}'],
         ['admin_settings', '{{  url_for('admin.settings')|safe }}'],
+        ['main_home', {{ url_for('main.home')|safe }}],
     ])
 
 
@@ -113,6 +132,7 @@
                 username: null, // 用户名
                 dialogFormVisible: false, // 登陆弹窗可见
                 fullscreenLoading: false, // 登陆中的loading
+                showPrivate: !debug || !user,
                 loginForm: {
                     username: '',
                     password: '',
@@ -190,6 +210,12 @@
                 this.getUserState()
             } else {
                 this.username = sessionStorage.username
+            }
+
+            if (!user) {
+                // 删sessionStorage
+                sessionStorage.username = ''
+                this.username = ''
             }
 
         }

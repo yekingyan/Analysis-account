@@ -136,7 +136,7 @@
                     height: {'min-height': window.innerHeight - 150 + 'px'},
                     isDays: true, // 是否为日颗粒度
                     chartData: { // 折线图数据
-                        columns: ['amount', '餐饮', '水果'],
+                        columns: user ? ['amount', '餐饮', '水果'] : res.columns.slice(1),
                         rows: res.rows
                     },
                     chartSettings: { // 折线图设置
@@ -153,6 +153,7 @@
                     },
                     pageSize: pageSize,
                     currentPage: 1,
+                    user: user,
                     dayOptions: {
                         shortcuts: [
                             {

@@ -1,5 +1,7 @@
 from flask import (
     Blueprint,
+    redirect,
+    url_for,
 )
 
 main = Blueprint('main', __name__)
@@ -12,5 +14,10 @@ def ping():
 
 @main.route('/')
 def index():
+    return redirect(url_for('expend.days'))
+
+
+@main.route('/home/')
+def home():
     from flask import render_template
-    return render_template('index__test.html')
+    return render_template('home.html')
