@@ -51,10 +51,8 @@ def upload():
     return jsonify({'patch_len': len(df_patch)}), 201
 
 
-@admin.route('/down2/', methods=['get'])
+@admin.route('/downDb/', methods=['get'])
 @login_required
 def download_db():
-    # file_name = 'database.db'
     path, file_name = current_app.config['DATABASE'].split('/')
-    print(path,  file_name)
     return send_from_directory(path, file_name, as_attachment=True)
